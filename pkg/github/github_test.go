@@ -42,7 +42,7 @@ func TestGetActivity(t *testing.T) {
 	}
 }
 
-func TestProcessEvents(t *testing.T) {
+func Test_processEvents(t *testing.T) {
 	tests := []struct {
 		name   string
 		events GitHubEvents
@@ -65,7 +65,7 @@ func TestProcessEvents(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ProcessEvents(tt.events)
+			got := processEvents(tt.events)
 			fmt.Println("got: ", got)
 			assert.Equal(t, tt.want, got)
 		})

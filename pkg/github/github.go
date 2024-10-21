@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -12,7 +13,11 @@ var (
 	GitHubEventsURL = "https://api.github.com/users/%s/events"
 )
 
-type GitHubEvents []GitHubEvent
+type GitHubEvents struct {
+	Events []GitHubEvent
+	user   string
+	limit  int
+}
 
 type GitHubEvent struct {
 	Type    string   `json:"type,omitempty"`
@@ -28,7 +33,12 @@ type Repo struct {
 
 type Payload struct {
 	Action string `json:"action,omitempty"`
-	Title  string `json:"title,omitempty"`
+	Issue  Issue  `json:"issue,omitempty"`
+}
+
+type Issue struct {
+	Title string `json:"title,omitempty"`
+	State string `json:"state,omitempty"`
 }
 
 type Commit struct {
@@ -36,39 +46,43 @@ type Commit struct {
 	Message string `json:"message,omitempty"`
 }
 
-func GetActivity(userName string) (string, error) {
-	githubURL := fmt.Sprintf(GitHubEventsURL, userName)
-	resp, err := http.Get(githubURL)
-	if err != nil {
-		return "", fmt.Errorf("error in fetching activity: %s", err)
+func NewGitHubEvents(user string, limit int) *GitHubEvents {
+	return &GitHubEvents{
+		user:  user,
+		limit: limit,
 	}
-	if resp.StatusCode == http.StatusNotFound {
-		return "", ErrUserNotFound
-	}
-
-	var data []byte
-	_, err = resp.Body.Read(data)
-	if err != nil {
-		return "", fmt.Errorf("error in reading the response: %s", err)
-	}
-
-	var events GitHubEvents
-
-	err = json.Unmarshal(data, &events)
-	if err != nil {
-		return "", fmt.Errorf("error in unmarshalling: %s", err)
-	}
-
-	result := ProcessEvents(events)
-	return result, nil
 }
 
-func ProcessEvents(events GitHubEvents) string {
+func (g *GitHubEvents) GetActivity() error {
+	githubURL := fmt.Sprintf(GitHubEventsURL, g.user)
+	resp, err := http.Get(githubURL)
+	if err != nil {
+		return fmt.Errorf("error in fetching activity: %s", err)
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		return ErrUserNotFound
+	}
+	if resp.StatusCode > 299 {
+		return fmt.Errorf("call to github api failed: %s\n", resp.Status)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error in reading the response: %s", err)
+	}
+
+	err = json.Unmarshal(data, &g.Events)
+	if err != nil {
+		return fmt.Errorf("error in unmarshalling: %s", err)
+	}
+
+	return nil
+}
+
+func (g *GitHubEvents) ProcessEvents() string {
 	activity := "User Activities:\n"
 
-	for i, event := range events {
-		fmt.Println("event type: ", event.Type)
-		fmt.Println("Event Type: ", Event(1).String())
+	for i, event := range g.Events {
 		switch event.Type {
 		case Event(1).String():
 		case Event(2).String():
@@ -90,7 +104,7 @@ func ProcessEvents(events GitHubEvents) string {
 		case Event(16).String():
 		case Event(17).String():
 		}
-		if i == 10 {
+		if i == g.limit {
 			break
 		}
 	}
