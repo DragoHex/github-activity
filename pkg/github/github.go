@@ -53,6 +53,7 @@ func NewGitHubEvents(user string, limit int) *GitHubEvents {
 	}
 }
 
+// GetActivity makes API call to fetch events from GitHub
 func (g *GitHubEvents) GetActivity() error {
 	githubURL := fmt.Sprintf(GitHubEventsURL, g.user)
 	resp, err := http.Get(githubURL)
@@ -79,6 +80,7 @@ func (g *GitHubEvents) GetActivity() error {
 	return nil
 }
 
+// ProcessEvents process the events data to create activity response
 func (g *GitHubEvents) ProcessEvents() string {
 	activity := "User Activities:\n"
 
