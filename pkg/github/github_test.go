@@ -90,12 +90,13 @@ func assertGitHubEvents(t testing.TB, exp, result []GitHubEvent) {
 	for i, event := range exp {
 		assert.Equal(t, event.Type, result[i].Type)
 		assert.Equal(t, event.Repo, result[i].Repo)
-		assert.Equal(t, event.Payload, result[i].Payload)
+		assert.Equal(t, event.Payload.Action, result[i].Payload.Action)
+		assert.Equal(t, event.Payload.Issue, result[i].Payload.Issue)
 
 		fmt.Println("check commits http.ResponseWriter, r *http.Request length")
-		assert.Equal(t, len(event.Commits), len(result[i].Commits))
-		for _, commit := range result[i].Commits {
-			assert.Equal(t, event.Commits[i], commit)
+		assert.Equal(t, len(event.Payload.Commits), len(result[i].Payload.Commits))
+		for _, commit := range result[i].Payload.Commits {
+			assert.Equal(t, event.Payload.Commits[i], commit)
 		}
 	}
 }
@@ -118,6 +119,57 @@ func Test_processEvents(t *testing.T) {
 			},
 			want: `User Activities:
 - Created a new repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid Push Event",
+			events: []GitHubEvent{
+				{
+					Type: "PushEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+					Payload: Payload{
+						Commits: []Commit{},
+					},
+				},
+			},
+			want: `User Activities:
+- Pushed 0 commits to /testUser/testRepo
+`,
+		},
+		{
+			name: "valid Pull Event",
+			events: []GitHubEvent{
+				{
+					Type: "PullRequestEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Created a Pull Request to /testUser/testRepo
+`,
+		},
+		{
+			name: "valid Issue Event",
+			events: []GitHubEvent{
+				{
+					Type: "IssuesEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+					Payload: Payload{
+						Action: "closed",
+						Issue: Issue{
+							Title: "Test Issue",
+						},
+					},
+				},
+			},
+			want: `User Activities:
+- closed "Test Issue" issue for repo /testUser/testRepo
 `,
 		},
 	}
