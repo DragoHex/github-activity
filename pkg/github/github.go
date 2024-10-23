@@ -20,10 +20,9 @@ type GitHubEvents struct {
 }
 
 type GitHubEvent struct {
-	Type    string   `json:"type,omitempty"`
-	Repo    Repo     `json:"repo,omitempty"`
-	Payload Payload  `json:"payload,omitempty"`
-	Commits []Commit `json:"commits,omitempty"`
+	Type    string  `json:"type,omitempty"`
+	Repo    Repo    `json:"repo,omitempty"`
+	Payload Payload `json:"payload,omitempty"`
 }
 
 type Repo struct {
@@ -32,8 +31,9 @@ type Repo struct {
 }
 
 type Payload struct {
-	Action string `json:"action,omitempty"`
-	Issue  Issue  `json:"issue,omitempty"`
+	Action  string   `json:"action,omitempty"`
+	Issue   Issue    `json:"issue,omitempty"`
+	Commits []Commit `json:"commits,omitempty"`
 }
 
 type Issue struct {
@@ -85,6 +85,7 @@ func (g *GitHubEvents) ProcessEvents() string {
 	activity := "User Activities:\n"
 
 	for i, event := range g.Events {
+		fmt.Println(event.Type)
 		switch event.Type {
 		case Event(1).String():
 		case Event(2).String():
@@ -95,13 +96,25 @@ func (g *GitHubEvents) ProcessEvents() string {
 		case Event(5).String():
 		case Event(6).String():
 		case Event(7).String():
+			act := fmt.Sprintf(
+				"- %s %q issue for repo %s\n",
+				event.Payload.Action,
+				event.Payload.Issue.Title,
+				event.Repo.Name,
+			)
+			activity = activity + act
 		case Event(8).String():
 		case Event(9).String():
 		case Event(10).String():
+			act := fmt.Sprintf("- Created a Pull Request to %s\n", event.Repo.Name)
+			activity = activity + act
 		case Event(11).String():
 		case Event(12).String():
 		case Event(13).String():
 		case Event(14).String():
+			commitCount := len(event.Payload.Commits)
+			act := fmt.Sprintf("- Pushed %d commits to %s\n", commitCount, event.Repo.Name)
+			activity = activity + act
 		case Event(15).String():
 		case Event(16).String():
 		case Event(17).String():
