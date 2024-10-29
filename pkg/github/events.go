@@ -8,19 +8,14 @@ const (
 	CreateEvent
 	DeleteEvent
 	ForkEvent
-	GollumEvent
 	IssueCommentEvent
 	IssuesEvent
-	MemberEvent
-	PublicEvent
 	PullRequestEvent
 	PullRequestReviewEvent
 	PullRequestReviewCommentEvent
 	PullRequestReviewThreadEvent
 	PushEvent
 	ReleaseEvent
-	SponsorshipEvent
-	WatchEvent
 )
 
 func (e Event) String() string {
@@ -29,19 +24,14 @@ func (e Event) String() string {
 		"CreateEvent",
 		"DeleteEvent",
 		"ForkEvent",
-		"GollumEvent",
 		"IssueCommentEvent",
 		"IssuesEvent",
-		"MemberEvent",
-		"PublicEvent",
 		"PullRequestEvent",
 		"PullRequestReviewEvent",
 		"PullRequestReviewCommentEvent",
 		"PullRequestReviewThreadEvent",
 		"PushEvent",
 		"ReleaseEvent",
-		"SponsorshipEvent",
-		"WatchEvent",
 	}[e-1]
 }
 
