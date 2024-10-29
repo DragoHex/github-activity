@@ -172,6 +172,131 @@ func Test_processEvents(t *testing.T) {
 - closed "Test Issue" issue for repo /testUser/testRepo
 `,
 		},
+		{
+			name: "valid Commit Comment Event",
+			events: []GitHubEvent{
+				{
+					Type: "CommitCommentEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Left commit comment for repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valide Fork Event",
+			events: []GitHubEvent{
+				{
+					Type: "ForkEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Forked repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid Issue Comment Event",
+			events: []GitHubEvent{
+				{
+					Type: "IssueCommentEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+					Payload: Payload{
+						Action: "closed",
+						Issue: Issue{
+							Title: "Test Issue",
+						},
+					},
+				},
+			},
+			want: `User Activities:
+- Commented on issue "Test Issue" for repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid PR review event",
+			events: []GitHubEvent{
+				{
+					Type: "PullRequestReviewEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Reviewed a PR for repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid PR review comment event",
+			events: []GitHubEvent{
+				{
+					Type: "PullRequestReviewCommentEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Left a PR review comment for repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid PR review thread event",
+			events: []GitHubEvent{
+				{
+					Type: "PullRequestReviewThreadEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Created a PR review thread for repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid release event",
+			events: []GitHubEvent{
+				{
+					Type: "ReleaseEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+				},
+			},
+			want: `User Activities:
+- Created a release for repo /testUser/testRepo
+`,
+		},
+		{
+			name: "valid delete event",
+			events: []GitHubEvent{
+				{
+					Type: "DeleteEvent",
+					Repo: Repo{
+						Name: "/testUser/testRepo",
+					},
+					Payload: Payload{
+						Action: "closed",
+						Issue: Issue{
+							Title: "Test Issue",
+						},
+						RefType: "branch",
+					},
+				},
+			},
+			want: `User Activities:
+- Deleted branch for repo /testUser/testRepo
+`,
+		},
 	}
 	gitHubEvents := NewGitHubEvents("test_user", 10)
 	for _, tt := range tests {
